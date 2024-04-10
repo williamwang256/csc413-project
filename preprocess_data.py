@@ -12,14 +12,20 @@ SEGMENT_TIME = 4
 SAMPLE_RATE = 44100
 NUM_SAMPLES = 179712
 
-BASE = "/h/u6/c9/01/wangwi18/winter24/csc413/project/"
+BASE = "/h/u6/c9/01/wangwi18/winter24/csc413/project/data/"
 DATA_PATH = BASE + "/data/"
 OUTPUT_PATH = BASE + "/output/"
+DATASET_PATH = BASE + "/metadata/bird_dataset.csv"
+METADATA_PATH = BASE + "/metadata/birdsong_metadata.csv"
 LABELS_PATH = BASE + "/metadata/labels.csv"
 
-SPECTROGRAM_PATH = BASE + "/spectrograms/"
+SPECTROGRAM_PATH = BASE + "/spectrograms/Class"
 SPEC_AUGMENT_PATH = BASE + "/augmentations/spec_augment/"
 TIME_SHIFT_PATH = BASE + "/augmentations/time_shift/"
+
+SORTED_PATH = BASE + "/sorted/"
+
+TEST_PATH = BASE + "/test/"
 
 fid_to_label = {}
 english_names = []
@@ -54,22 +60,22 @@ def pad_signal(y):
 # Performs time and frequency masking as a form of data augmentation on the spectrogram.
 # Referenced from: https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook
 def spec_augment(original_melspec, freq_masking_max_percentage=0.15, time_masking_max_percentage=0.3):
-    augmented_melspec = original_melspec.copy()
-    all_frames_num, all_freqs_num = augmented_melspec.shape
+  augmented_melspec = original_melspec.copy()
+  all_frames_num, all_freqs_num = augmented_melspec.shape
 
-    # Frequency masking
-    freq_percentage = random.uniform(0.0, freq_masking_max_percentage)
-    num_freqs_to_mask = int(freq_percentage * all_freqs_num)
-    f0 = int(np.random.uniform(low = 0.0, high = (all_freqs_num - num_freqs_to_mask)))
-    augmented_melspec[:, f0:(f0 + num_freqs_to_mask)] = 0
+  # Frequency masking
+  freq_percentage = random.uniform(0.0, freq_masking_max_percentage)
+  num_freqs_to_mask = int(freq_percentage * all_freqs_num)
+  f0 = int(np.random.uniform(low = 0.0, high = (all_freqs_num - num_freqs_to_mask)))
+  augmented_melspec[:, f0:(f0 + num_freqs_to_mask)] = 0
 
-    # Time masking
-    time_percentage = random.uniform(0.0, time_masking_max_percentage)
-    num_frames_to_mask = int(time_percentage * all_frames_num)
-    t0 = int(np.random.uniform(low = 0.0, high = (all_frames_num - num_frames_to_mask)))
-    augmented_melspec[t0:(t0 + num_frames_to_mask), :] = 0
-    
-    return augmented_melspec
+  # Time masking
+  time_percentage = random.uniform(0.0, time_masking_max_percentage)
+  num_frames_to_mask = int(time_percentage * all_frames_num)
+  t0 = int(np.random.uniform(low = 0.0, high = (all_frames_num - num_frames_to_mask)))
+  augmented_melspec[t0:(t0 + num_frames_to_mask), :] = 0
+  
+  return augmented_melspec
 
 
 # Shifts the audio in time using np.roll
@@ -80,7 +86,7 @@ def time_shift_augment(original_melspec, shift_amt=3000):
 # Plot the given spectrogram and save under the provided filename and path
 def plot_spectrogram(S, sr, filename, path):
   fig, ax = plt.subplots()
-  librosa.display.specshow(S, sr=sr, fmax=8000, ax=ax)
+  librosa.display.specshow(S, sr=sr, fmin=500, fmax=15000, ax=ax)
   fig.tight_layout()
   fig.savefig(f"{path}/{filename}.png")
   plt.axis("off")
@@ -99,9 +105,10 @@ def generate_spectrograms():
 
     filename = file.strip(".wav")
 
-    plot_spectrogram(S=S_dB, sr=sr, filename=filename, path=SPECTROGRAM_PATH)
-    plot_spectrogram(S=S_dB_spec_augment, sr=sr, filename=filename, path=SPEC_AUGMENT_PATH)
-    plot_spectrogram(S=S_dB_time_shift, sr=sr, filename=filename, path=TIME_SHIFT_PATH)
+    # plot_spectrogram(S=S_dB, sr=sr, filename=filename, path=SPECTROGRAM_PATH)
+    plot_spectrogram(S=S_dB_spec_augment, sr=sr, filename=filename, path=TEST_PATH)
+    # plot_spectrogram(S=S_dB_time_shift, sr=sr, filename=filename, path=TIME_SHIFT_PATH)
+    break
 
     
 if __name__ == "__main__":
