@@ -1,2 +1,9 @@
 *.out
 __pycache__
+venv/
+data/
+metadata/
+output/
+songs/
+spectrograms/
+augmentations/
