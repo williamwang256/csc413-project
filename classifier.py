@@ -218,6 +218,6 @@ def train_model(model,
     plt.ylabel("Accuracy")
     plt.legend(["Train", "Validation"])
 
-# train_model(model, train_dl, val_dl, learning_rate=0.001, epochs=3, plot_every=1, plot=False)
-# print("test acc {}".format(accuracy(model, test_dl, device)))
+train_model(model, train_dl, val_dl, learning_rate=0.001, epochs=10, plot_every=1, plot=False)
+print("test acc {}".format(accuracy(model, test_dl, device)))
 print("Run complete! The time is currently: ", datetime.datetime.now())
