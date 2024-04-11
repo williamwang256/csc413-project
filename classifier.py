@@ -16,7 +16,7 @@ from collections import OrderedDict
 
 import datetime
 
-print(datetime.datetime.now())
+print("Starting run! The time is currently: ", datetime.datetime.now())
 
 BASE = "/h/u6/c9/01/wangwi18/winter24/csc413/project/data/"
 DATA_PATH = BASE + "/data/"
@@ -33,17 +33,17 @@ SORTED_PATH = BASE + "/sorted/"
 
 # use ImageFolder to load the data to Pytorch Dataset Format
 dataset = ImageFolder(SORTED_PATH) # REPLACE WITH CORRECT PATH
-print(len(dataset))
-print(dataset.classes)
-print(len(dataset.classes))
+print("Number of samples: ", len(dataset))
+# print(dataset.classes)
+print("Number of classes: ", len(dataset.classes))
 
 random_seed = 45
 torch.manual_seed(random_seed)
 
 img, label = dataset[0]
 
-plt.imshow(img)
-print(label, dataset.classes[label])
+# plt.imshow(img)
+# print(label, dataset.classes[label])
 
 
 
@@ -71,9 +71,9 @@ val_size = int(0.2 * len(dataset))
 test_size = len(dataset) - train_size - val_size
 
 train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
-print(len(train_set), len(val_set), len(test_set))
-
-
+print("Train set size: ", len(train_set))
+print("Validation set size: ", len(val_set))
+print("Test set size: ", len(test_set))
 
 # define transformations here
 transform = transforms.Compose([
@@ -87,11 +87,11 @@ train_ds = BirdSpectrogramDataset(train_set, transform)
 val_ds = BirdSpectrogramDataset(val_set, transform)
 test_ds = BirdSpectrogramDataset(test_set, transform)
 
-for X, t in train_ds:
-  plt.imshow(X.permute(1,2,0))
-  print(X.shape)
-  print(t)
-  break
+# for X, t in train_ds:
+#   plt.imshow(X.permute(1,2,0))
+#   print(X.shape)
+#   print(t)
+#   break
 
 
 
@@ -111,7 +111,7 @@ def get_default_device():
     return torch.device('cpu')
 
 device = get_default_device()
-print(device)
+print("Device: ", device)
 
 
 
@@ -218,9 +218,6 @@ def train_model(model,
     plt.ylabel("Accuracy")
     plt.legend(["Train", "Validation"])
 
-
-
-train_model(model, train_dl, val_dl, learning_rate=0.001, epochs=3, plot_every=1, plot=False)
-print("test acc {}".format(accuracy(model, test_dl, device)))
-print("DONE!")
-print(datetime.datetime.now())
+# train_model(model, train_dl, val_dl, learning_rate=0.001, epochs=3, plot_every=1, plot=False)
+# print("test acc {}".format(accuracy(model, test_dl, device)))
+print("Run complete! The time is currently: ", datetime.datetime.now())
