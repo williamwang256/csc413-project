@@ -3,8 +3,8 @@ from torch.utils.data import random_split
 from torchvision.datasets import ImageFolder
 import torchvision.transforms as transforms
 
-from BirdSpectrogramDataset import BirdSpectrogramDataset
-from BirdSpectrogramResNet50 import BirdSpectrogramResNet50
+from BirdSpectrogramDataset import *
+from BirdSpectrogramResNet50 import *
 from config import *
 
 # move data to GPU
@@ -58,7 +58,7 @@ if __name__ == "__main__":
   model = BirdSpectrogramResNet50(len(dataset.classes))
 
   # Train the model
-  BirdSpectrogramResNet50.train_model(model, device, train_dl, val_dl, learning_rate=0.001, epochs=10, plot_every=1, plot=False)
+  train_model(model, device, train_dl, val_dl, learning_rate=0.001, epochs=10, plot_every=1, plot=False)
 
   # Final test accuracy
-  print("test acc {}".format(BirdSpectrogramResNet50.accuracy(model, test_dl, device)))
+  print("test acc {}".format(accuracy(model, test_dl, device)))
