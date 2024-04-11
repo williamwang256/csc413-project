@@ -220,6 +220,7 @@ def train_model(model,
 
 
 
-train_model(model, train_dl, val_dl, learning_rate=0.001, epochs=1, plot_every=1, plot=False)
+train_model(model, train_dl, val_dl, learning_rate=0.001, epochs=3, plot_every=1, plot=False)
+print("test acc {}".format(accuracy(model, test_dl, device)))
 print("DONE!")
 print(datetime.datetime.now())
