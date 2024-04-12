@@ -1,4 +1,4 @@
 #!/bin/bash
 
 rm *.out
-sbatch job-transformer.sh
+sbatch job-cnn.sh
