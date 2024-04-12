@@ -8,4 +8,4 @@
 #SBATCH --output=413-project_%j.out
 
 source venv/bin/activate
-time python3 classifier.py
+python3 src/transformer.py
