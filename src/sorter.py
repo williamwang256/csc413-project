@@ -9,14 +9,14 @@ from config import *
 df = pd.read_csv(DATASET_PATH, header=None)
 # print(df.iat[51, 0]) # should be eurasian golden oriole
 
-dataset = ImageFolder(SPECTROGRAM_PATH)
+dataset = ImageFolder("data/small_jpg/")
 
 for img, index in dataset.imgs:
   i = int(img[-6:-4].replace("_", "")) # get bird index
   bird_name = df.iat[i, 0]
 
   # make directory
-  path = SORTED_PATH + bird_name
+  path = "data/small_sorted_jpg/" + bird_name
   os.makedirs(path, exist_ok=True)
 
   path = "\"" + path+"\""

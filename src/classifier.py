@@ -1,3 +1,4 @@
+from random import randint
 import torch
 from torch.utils.data import random_split
 from torchvision.datasets import ImageFolder
@@ -44,21 +45,23 @@ if __name__ == "__main__":
     transforms.ToTensor()
   ])
 
+  transform_aug = transforms.Compose([
+    # you can add other transformations in this list
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Lambda(lambda x: torch.roll(x, randint(1, 10000), dims=2)),
+  ])
+
   # define dataset
-  train_ds = BirdSpectrogramDataset(train_set, transform)
+  train_ds = BirdSpectrogramDataset(train_set, transform_aug)
   val_ds   = BirdSpectrogramDataset(val_set, transform)
   test_ds  = BirdSpectrogramDataset(test_set, transform)
-
-  # create DataLoaders
-  batch_size = 64
-  train_dl = torch.utils.data.DataLoader(train_ds, batch_size, shuffle=True)
-  val_dl   = torch.utils.data.DataLoader(val_ds, batch_size * 2)
-  test_dl  = torch.utils.data.DataLoader(test_ds, batch_size * 2)
 
   model = BirdSpectrogramResNet50(len(dataset.classes))
 
   # Train the model
-  train_model(model, device, train_dl, val_dl, learning_rate=0.001, epochs=10, plot_every=1, plot=False)
+  train_model(model, device, train_ds, val_ds, learning_rate=0.001, epochs=10, plot_every=1, plot=True)
 
   # Final test accuracy
+  test_dl  = torch.utils.data.DataLoader(test_ds, 256)
   print("test acc {}".format(accuracy(model, test_dl, device)))

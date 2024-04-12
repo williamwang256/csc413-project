@@ -1,12 +1,5 @@
 *.out
 __pycache__
 venv/
-data/augmentations/
-data/data/
-data/output/
-data/small/
-data/songs/
-data/sorted/
-data/sorted_small/
-data/spectrograms/
-data/test/
+data/
+vit-base-birds/

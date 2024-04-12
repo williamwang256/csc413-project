@@ -38,12 +38,16 @@ def accuracy(model, dl, device):
 
 def train_model(model,
                 device,
-                train_dl,
-                val_dl,
+                train_ds,
+                val_ds,
                 learning_rate=0.001,
+                batch_size=64,
                 epochs=10,
                 plot_every=10,
                 plot=True):
+
+  train_dl = torch.utils.data.DataLoader(train_ds, batch_size, shuffle=True)
+  val_dl   = torch.utils.data.DataLoader(val_ds, 256)
 
   model = model.to(device)
   criterion = nn.CrossEntropyLoss()
@@ -93,6 +97,7 @@ def train_model(model,
     plt.title("Loss over iterations")
     plt.xlabel("Iterations")
     plt.ylabel("Loss")
+    plt.savefig("loss.png")
 
     plt.figure()
     plt.plot(iters[:len(train_acc)], train_acc)
@@ -101,3 +106,4 @@ def train_model(model,
     plt.xlabel("Iterations")
     plt.ylabel("Accuracy")
     plt.legend(["Train", "Validation"])
+    plt.savefig("acc.png")
