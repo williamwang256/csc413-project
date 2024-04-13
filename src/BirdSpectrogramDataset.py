@@ -12,16 +12,6 @@ class BirdSpectrogramDataset(Dataset):
   def __getitem__(self, idx):
     img, label = self.ds[idx]
 
-    # CROP THE IMAGE
-    width, height = img.size
-    border = 15
-    left = border
-    top = border
-    right = width - border
-    bottom = height - border
-
-    img = img.crop((left, top, right, bottom))
-
     if self.transform:
       img = self.transform(img)
 
