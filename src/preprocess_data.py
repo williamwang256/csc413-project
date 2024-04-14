@@ -7,13 +7,15 @@ import librosa.display
 import matplotlib.pyplot as plt
 import numpy as np
 
+from kaggle.api.kaggle_api_extended import KaggleApi
+
 from config import *
 
 SEGMENT_TIME = 4
 SAMPLE_RATE = 44100
 NUM_SAMPLES = 179712
 
-df = pd.read_csv(METADATA_PATH, header=0)
+df = pd.read_csv(METASONGS_PATH, header=0)
 
 
 def get_english_name(fid):
@@ -21,18 +23,24 @@ def get_english_name(fid):
 
 
 def initialize():
-  os.makedirs(DATA_PATH, exist_ok=True)
+  os.makedirs(SONGS_PATH, exist_ok=True)
   os.makedirs(AUDIO_PATH, exist_ok=True)
   os.makedirs(SPECTROGRAM_PATH, exist_ok=True)
 
 
+def download_dataset():
+  api = KaggleApi()
+  api.authenticate()
+  api.dataset_download_files("rtatman/british-birdsong-dataset", unzip=True)
+
+
 def segment_clips():
   pattern = "(xc[0-9]*)\.flac"
-  for file in os.listdir(DATA_PATH):
+  for file in os.listdir(SONGS_PATH):
     m = re.search(pattern, file)
     if m is not None:
       filename, fid = m.group(0), m.group(1)
-      command = f"ffmpeg -i {os.path.join(DATA_PATH, filename)} -f segment -segment_time {SEGMENT_TIME} {os.path.join(AUDIO_PATH, fid + '_%03d.wav')}"
+      command = f"ffmpeg -i {os.path.join(SONGS_PATH, filename)} -f segment -segment_time {SEGMENT_TIME} {os.path.join(AUDIO_PATH, fid + '_%03d.wav')}"
       process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       process.wait()
 
@@ -65,6 +73,7 @@ def generate_spectrograms():
 
     
 if __name__ == "__main__":
+  download_dataset()
   initialize()
   # segment_clips()
-  generate_spectrograms()
+  # generate_spectrograms()
