@@ -31,7 +31,7 @@ def initialize():
 def download_dataset():
   api = KaggleApi()
   api.authenticate()
-  api.dataset_download_files("rtatman/british-birdsong-dataset", unzip=True)
+  api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE, unzip=True)
 
 
 def segment_clips():
