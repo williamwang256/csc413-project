@@ -17,17 +17,20 @@ NUM_SAMPLES = 179712
 
 
 def download_dataset():
+  print("Downloading dataset...")
   api = KaggleApi()
   api.authenticate()
   api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE, unzip=True)
 
 
 def create_folders():
+  print("Creating folders...")
   os.makedirs(AUDIO_PATH, exist_ok=True)
   os.makedirs(SPECTROGRAM_PATH, exist_ok=True)
 
 
 def segment_clips():
+  print("Segmenting clips...")
   pattern = "(xc[0-9]*)\.flac"
   for file in os.listdir(SONGS_PATH):
     m = re.search(pattern, file)
@@ -59,6 +62,7 @@ def plot_spectrogram(S, sr, fid, segment):
 
 
 def generate_spectrograms():
+  print("Generating spectrograms...")
   for file in os.listdir(AUDIO_PATH):
     y, sr = librosa.load(f"{AUDIO_PATH}/{file}", sr=SAMPLE_RATE, mono=True)
     pad_amount = NUM_SAMPLES - y.shape[0]
@@ -70,9 +74,9 @@ def generate_spectrograms():
 
     
 if __name__ == "__main__":
-  global df
-  df = pd.read_csv(METADATA_PATH, header=0)
   download_dataset()
   create_folders()
+  global df
+  df = pd.read_csv(METADATA_PATH, header=0)
   segment_clips()
   generate_spectrograms()
