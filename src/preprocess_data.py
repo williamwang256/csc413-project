@@ -15,7 +15,7 @@ SEGMENT_TIME = 4
 SAMPLE_RATE = 44100
 NUM_SAMPLES = 179712
 
-df = pd.read_csv(METASONGS_PATH, header=0)
+df = pd.read_csv(METADATA_PATH, header=0)
 
 
 def get_english_name(fid):
