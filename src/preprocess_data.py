@@ -15,15 +15,12 @@ SEGMENT_TIME = 4
 SAMPLE_RATE = 44100
 NUM_SAMPLES = 179712
 
-df = pd.read_csv(METADATA_PATH, header=0)
-
 
 def get_english_name(fid):
   return df.loc[df["file_id"] == fid]["english_cname"].values[0]
 
 
-def initialize():
-  os.makedirs(SONGS_PATH, exist_ok=True)
+def create_folders():
   os.makedirs(AUDIO_PATH, exist_ok=True)
   os.makedirs(SPECTROGRAM_PATH, exist_ok=True)
 
@@ -73,7 +70,9 @@ def generate_spectrograms():
 
     
 if __name__ == "__main__":
+  global df
+  df = pd.read_csv(METADATA_PATH, header=0)
   download_dataset()
-  initialize()
-  # segment_clips()
-  # generate_spectrograms()
+  create_folders()
+  segment_clips()
+  generate_spectrograms()
