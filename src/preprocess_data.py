@@ -16,19 +16,15 @@ SAMPLE_RATE = 44100
 NUM_SAMPLES = 179712
 
 
-def get_english_name(fid):
-  return df.loc[df["file_id"] == fid]["english_cname"].values[0]
+def download_dataset():
+  api = KaggleApi()
+  api.authenticate()
+  api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE, unzip=True)
 
 
 def create_folders():
   os.makedirs(AUDIO_PATH, exist_ok=True)
   os.makedirs(SPECTROGRAM_PATH, exist_ok=True)
-
-
-def download_dataset():
-  api = KaggleApi()
-  api.authenticate()
-  api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE, unzip=True)
 
 
 def segment_clips():
@@ -40,6 +36,10 @@ def segment_clips():
       command = f"ffmpeg -i {os.path.join(SONGS_PATH, filename)} -f segment -segment_time {SEGMENT_TIME} {os.path.join(AUDIO_PATH, fid + '_%03d.wav')}"
       process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       process.wait()
+
+
+def get_english_name(fid):
+  return df.loc[df["file_id"] == fid]["english_cname"].values[0]
 
 
 def plot_spectrogram(S, sr, fid, segment):
