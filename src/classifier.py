@@ -16,7 +16,7 @@ random_seed = 45
 torch.manual_seed(random_seed)
 
 # use ImageFolder to load the data to Pytorch Dataset Format
-dataset = ImageFolder(SORTED_PATH) # REPLACE WITH CORRECT PATH
+dataset = ImageFolder(SPECTROGRAM_PATH) # REPLACE WITH CORRECT PATH
 print("Number of samples: ", len(dataset))
 # print(dataset.classes)
 print("Number of classes: ", len(dataset.classes))

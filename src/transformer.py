@@ -16,7 +16,7 @@ model_name_or_path = "google/vit-base-patch16-224-in21k"
 
 # Load the dataset, and split into train, test, and validation sets
 # Use the split: 60% train, 20% validation, 20% test
-full = load_dataset("imagefolder", data_dir=SORTED_PATH, split="train")
+full = load_dataset("imagefolder", data_dir=SPECTROGRAM_PATH, split="train")
 train_testvalid = full.train_test_split(test_size=0.4)
 test_valid = train_testvalid['test'].train_test_split(test_size=0.5)
 ds = DatasetDict({
