@@ -54,7 +54,7 @@ def compute_metrics(p):
                         references=p.label_ids)
 
 # Fine-tunes the model with our dataset
-def train_model(model, ds):
+def train_model(model, processor, ds):
   # Customizable training arguments
   training_args = TrainingArguments(
     output_dir="./vit-base-birds",
@@ -99,7 +99,7 @@ def train_model(model, ds):
   trainer.save_metrics("eval", metrics)
 
 # Obtains the attention map for the given image
-def get_attention_map(model, img, get_mask=False):
+def get_attention_map(model, processor, img, get_mask=False):
   model = model.cpu()   # this computation will be done on CPU
 
   # Pass the input through the model
@@ -172,9 +172,9 @@ if __name__ == "__main__":
   )
 
   # Train the model
-  train_model(model, prepared_ds)
+  train_model(model, processor, prepared_ds)
 
   # Plot the attention map
   img = Image.open(SPECTROGRAM_PATH + "/Barn Swallow/xc157331_039.jpg")
-  result = get_attention_map(model, img, True)
+  result = get_attention_map(model, processor, img, True)
   plot_attention_map(img, result)
