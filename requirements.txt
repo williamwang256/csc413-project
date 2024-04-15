@@ -13,6 +13,7 @@ cycler==0.12.1
 datasets==2.18.0
 decorator==5.1.1
 dill==0.3.8
+evaluate==0.4.1
 filelock==3.13.4
 fonttools==4.51.0
 frozenlist==1.4.1
@@ -47,6 +48,7 @@ nvidia-cusparse-cu12==12.1.0.106
 nvidia-nccl-cu12==2.19.3
 nvidia-nvjitlink-cu12==12.4.127
 nvidia-nvtx-cu12==12.1.105
+opencv-python==4.9.0.80
 packaging==24.0
 pandas==2.2.2
 pillow==10.3.0
@@ -64,6 +66,7 @@ pytz==2024.1
 PyYAML==6.0.1
 regex==2023.12.25
 requests==2.31.0
+responses==0.18.0
 safetensors==0.4.2
 scikit-learn==1.4.2
 scipy==1.13.0
