@@ -7,28 +7,29 @@ import numpy as np
 from random import randint
 from evaluate import load
 from datasets import load_dataset, DatasetDict
-from transformers import Trainer, TrainingArguments, ViTForImageClassification, ViTImageProcessor, ViTFeatureExtractor
+from transformers import Trainer, TrainingArguments, ViTForImageClassification, ViTImageProcessor
 from PIL import Image
 import cv2
 import matplotlib.pyplot as plt
 
 from config import *
 
+ATTN_MAP = "attn_map.jpg"
+
 # We will fine-tune the following pre-trained model
 MODEL = "google/vit-base-patch16-224-in21k"
 
 # Load the dataset, and split into train, test, and validation sets
 # Use the split: 60% train, 20% validation, 20% test
-full = load_dataset("imagefolder", data_dir=SPECTROGRAM_PATH, split="train")
-train_testvalid = full.train_test_split(test_size=0.4)
-test_valid = train_testvalid['test'].train_test_split(test_size=0.5)
-ds = DatasetDict({
-    'train': train_testvalid['train'],
-    'test': test_valid['test'],
-    'valid': test_valid['train']})
-
-# Load the pre-trained model's preprocessor
-processor = ViTImageProcessor.from_pretrained(MODEL)
+def load_ds():
+  full = load_dataset("imagefolder", data_dir=SPECTROGRAM_PATH, split="train")
+  train_testvalid = full.train_test_split(test_size=0.4)
+  test_valid = train_testvalid["test"].train_test_split(test_size=0.5)
+  ds = DatasetDict({
+    "train": train_testvalid["train"],
+    "test": test_valid["test"],
+    "valid": test_valid["train"]})
+  return ds
 
 # A transformation which applies the above processor and some data
 # augmentation steps (time shifting)
@@ -37,37 +38,6 @@ def transform(example_batch):
   inputs["pixel_values"] = torch.roll(inputs["pixel_values"], randint(1, 10000), dims=3)
   inputs["label"] = example_batch["label"]
   return inputs
-
-# Apply the transformation to the dataset. Note: the transformation is applied
-# to examples only as they are indexed
-prepared_ds = ds.with_transform(transform)
-
-# Create our model
-labels = ds["train"].features["label"].names
-model = ViTForImageClassification.from_pretrained(
-  MODEL,
-  num_labels=len(labels),
-  id2label={str(i): c for i, c in enumerate(labels)},
-  label2id={c: str(i) for i, c in enumerate(labels)}
-)
-
-# Customizable training arguments
-training_args = TrainingArguments(
-  output_dir="./vit-base-birds",
-  per_device_train_batch_size=16,
-  evaluation_strategy="steps",
-  num_train_epochs=10,
-  fp16=True,
-  save_steps=10,
-  eval_steps=10,
-  logging_steps=10,
-  learning_rate=2e-4,
-  save_total_limit=2,
-  remove_unused_columns=False,
-  push_to_hub=False,
-  report_to="tensorboard",
-  load_best_model_at_end=True,
-)
 
 # Stacks the inputs from a batch into a single tensor
 def collate_fn(batch):
@@ -82,36 +52,59 @@ def compute_metrics(p):
   return metric.compute(predictions=np.argmax(p.predictions, axis=1),
                         references=p.label_ids)
 
-# Create the trainer object
-trainer = Trainer(
-  model=model,
-  args=training_args,
-  data_collator=collate_fn,
-  compute_metrics=compute_metrics,
-  train_dataset=prepared_ds["train"],
-  eval_dataset=prepared_ds["valid"],
-  tokenizer=processor,
-)
+# Fine-tunes the model with our dataset
+def train_model(model, ds):
+  # Customizable training arguments
+  training_args = TrainingArguments(
+    output_dir="./vit-base-birds",
+    per_device_train_batch_size=16,
+    evaluation_strategy="steps",
+    num_train_epochs=10,
+    fp16=True,
+    save_steps=10,
+    eval_steps=10,
+    logging_steps=10,
+    learning_rate=2e-4,
+    save_total_limit=2,
+    remove_unused_columns=False,
+    push_to_hub=False,
+    report_to="tensorboard",
+    load_best_model_at_end=True,
+  )
 
-# Train the model 
-train_results = trainer.train()
+  # Create the trainer object
+  trainer = Trainer(
+    model=model,
+    args=training_args,
+    data_collator=collate_fn,
+    compute_metrics=compute_metrics,
+    train_dataset=ds["train"],
+    eval_dataset=ds["valid"],
+    tokenizer=processor,
+  )
 
-# Save the results
-trainer.save_model()
-trainer.log_metrics("train", train_results.metrics)
-trainer.save_metrics("train", train_results.metrics)
-trainer.save_state()
+  # Train the model 
+  train_results = trainer.train()
 
-# Finally, evaluate on the test set
-metrics = trainer.evaluate(prepared_ds["test"])
-trainer.log_metrics("eval", metrics)
-trainer.save_metrics("eval", metrics)
+  # Save the results
+  trainer.save_model()
+  trainer.log_metrics("train", train_results.metrics)
+  trainer.save_metrics("train", train_results.metrics)
+  trainer.save_state()
 
-def get_attention_map(img, get_mask=False):
+  # Finally, evaluate on the test set
+  metrics = trainer.evaluate(ds["test"])
+  trainer.log_metrics("eval", metrics)
+  trainer.save_metrics("eval", metrics)
+
+# Obtains the attention map for the given image
+def get_attention_map(model, img, get_mask=False):
+  model = model.cpu()   # this computation will be done on CPU
+
   # Pass the input through the model
-  inputs  = processor(images=img, return_tensors="pt")
-  print(torch.argmax(model(**inputs).logits, dim=1))
+  inputs = processor(images=img, return_tensors="pt")
   output = model(**inputs, output_attentions=True)
+  print(torch.argmax(model(**inputs).logits, dim=1))
 
   # Access attention maps
   att_mat = torch.stack(output.attentions).squeeze(1)
@@ -143,16 +136,44 @@ def get_attention_map(img, get_mask=False):
   
   return result
 
+# Plots the attention map alongside the original image
 def plot_attention_map(original_img, att_map):
-  fig, (ax1, ax2) = plt.subplots(ncols=2, figsize=(16, 16))
-  ax1.set_title('Original')
-  ax2.set_title('Attention Map Last Layer')
+  _, (ax1, ax2) = plt.subplots(ncols=2, figsize=(16, 16))
+  ax1.set_title("Original")
+  ax2.set_title("Attention Map Last Layer")
   _ = ax1.imshow(original_img)
   _ = ax2.imshow(att_map)
-  plt.axis('off')
-  plt.savefig("map.jpg")
+  plt.axis("off")
+  plt.savefig(ATTN_MAP)
 
-# Plot attention map
-img = Image.open(SPECTROGRAM_PATH + "/Barn Swallow/xc157331_039.jpg")
-result = get_attention_map(img, True)
-plot_attention_map(img, result)
+
+if __name__ == "__main__":
+  device = torch.device("cuda:0") if torch.cuda.is_available() else torch.device("cpu")
+  print("Device: ", device)
+
+  # Load the dataset
+  ds = load_ds()
+
+  # Load the pre-trained model's preprocessor
+  processor = ViTImageProcessor.from_pretrained(MODEL)
+
+  # Apply the transformation to the dataset
+  # Note: the transformation is applied to examples only as they are indexed
+  prepared_ds = ds.with_transform(transform)
+
+  # Create the model
+  labels = ds["train"].features["label"].names
+  model = ViTForImageClassification.from_pretrained(
+    MODEL,
+    num_labels=len(labels),
+    id2label={str(i): c for i, c in enumerate(labels)},
+    label2id={c: str(i) for i, c in enumerate(labels)}
+  )
+
+  # Train the model
+  train_model(model, prepared_ds)
+
+  # Plot the attention map
+  img = Image.open(SPECTROGRAM_PATH + "/Barn Swallow/xc157331_039.jpg")
+  result = get_attention_map(model, img, True)
+  plot_attention_map(img, result)
