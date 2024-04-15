@@ -1,6 +1,7 @@
 # https://huggingface.co/blog/fine-tune-vit
 # https://huggingface.co/docs/datasets/en/create_datasethttps://huggingface.co/docs/datasets/en/create_dataset
 # https://huggingface.co/docs/datasets/en/quickstart#vision
+# https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map
 
 import torch
 import numpy as np

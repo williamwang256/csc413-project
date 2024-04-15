@@ -1,3 +1,7 @@
+# https://unix.stackexchange.com/a/283547
+# https://www.analyticsvidhya.com/blog/2022/04/guide-to-audio-classification-using-deep-learning/
+# https://stackoverflow.com/a/60309843
+
 import os
 import re
 import subprocess
