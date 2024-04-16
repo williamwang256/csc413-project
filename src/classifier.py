@@ -8,6 +8,8 @@ from BirdSpectrogramDataset import *
 from BirdSpectrogramResNet50 import *
 from config import *
 
+import sys
+
 # move data to GPU
 def get_default_device():
   if torch.cuda.is_available():
@@ -16,6 +18,13 @@ def get_default_device():
     return torch.device('cpu')
 
 if __name__ == "__main__":
+  # get arg
+  n = len(sys.argv)
+  if (n == 1):
+    print("Usage: classifier.py <no aug (1) / yes aug (0)>")
+    exit(0)
+  no_aug = int(sys.argv[1])
+
   device = get_default_device()
   print("Device: ", device)
 
@@ -53,7 +62,11 @@ if __name__ == "__main__":
   ])
 
   # define dataset
-  train_ds = BirdSpectrogramDataset(train_set, transform_aug)
+  if (no_aug):
+    train_ds = BirdSpectrogramDataset(train_set, transform)
+  else:
+    train_ds = BirdSpectrogramDataset(train_set, transform_aug)
+
   val_ds   = BirdSpectrogramDataset(val_set, transform)
   test_ds  = BirdSpectrogramDataset(test_set, transform)
 
