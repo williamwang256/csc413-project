@@ -88,7 +88,7 @@ def get_trainer(model, processor, ds):
     per_device_train_batch_size=16,
     evaluation_strategy="steps",
     num_train_epochs=10,
-    # fp16=True,
+    fp16=torch.cuda.is_available(),  # fp16 only supported on GPU
     save_steps=10,
     eval_steps=10,
     logging_steps=10,
@@ -166,6 +166,34 @@ def plot_attention_map(original_img, att_map):
   plt.savefig(os.path.join(PLOTS_DIR, "attn_map.jpg"))
 
 
+def plot_curves():
+  with open(os.path.join(MODEL_SAVE_DIR, "trainer_state.json"), "r") as f:
+    d = json.load(f)
+    eval_checkpoints = []
+    train_checkpoints = []
+    acc = []
+    loss = []
+    for entry in d["log_history"]:
+      if "eval_accuracy" in entry:
+        eval_checkpoints.append(entry["epoch"])
+        acc.append(entry["eval_accuracy"])
+      if ("loss") in entry:
+        train_checkpoints.append(entry["epoch"])
+        loss.append(entry["loss"])
+    plt.figure()
+    plt.plot(eval_checkpoints, acc)
+    plt.title("Validation Accuracy over Iterations")
+    plt.xlabel("Epoch")
+    plt.ylabel("Validation Accuracy")
+    plt.savefig(os.path.join(PLOTS_DIR, "transformers_acc.png"))
+    plt.figure()
+    plt.plot(train_checkpoints, loss)
+    plt.title("Training Loss over Iterations")
+    plt.xlabel("Epoch")
+    plt.ylabel("Training Loss")
+    plt.savefig("plots/transformers_loss.png")
+
+
 if __name__ == "__main__":
   
   if len(sys.argv) < 2 or len(sys.argv) > 5:
@@ -226,28 +254,4 @@ if __name__ == "__main__":
       print("No saved model found.")
       exit(1)
     print("Plotting accuacy and loss curves for saved model: ", MODEL_SAVE_DIR)
-    with open(os.path.join(MODEL_SAVE_DIR, "trainer_state.json"), "r") as f:
-      d = json.load(f)
-      eval_checkpoints = []
-      train_checkpoints = []
-      acc = []
-      loss = []
-      for entry in d["log_history"]:
-        if "eval_accuracy" in entry:
-          eval_checkpoints.append(entry["epoch"])
-          acc.append(entry["eval_accuracy"])
-        if ("loss") in entry:
-          train_checkpoints.append(entry["epoch"])
-          loss.append(entry["loss"])
-      plt.figure()
-      plt.plot(eval_checkpoints, acc)
-      plt.title("Validation Accuracy over Iterations")
-      plt.xlabel("Epoch")
-      plt.ylabel("Validation Accuracy")
-      plt.savefig(os.path.join(PLOTS_DIR, "transformers_acc.png"))
-      plt.figure()
-      plt.plot(train_checkpoints, loss)
-      plt.title("Training Loss over Iterations")
-      plt.xlabel("Epoch")
-      plt.ylabel("Training Loss")
-      plt.savefig("plots/transformers_loss.png")
+    plot_curves()
