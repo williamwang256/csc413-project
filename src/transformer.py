@@ -50,13 +50,27 @@ def spec_augment(original_melspec, freq_masking_max_percentage=0.15, time_maskin
 # Load the dataset, and split into train, test, and validation sets
 # Use the split: 60% train, 20% validation, 20% test
 def load_ds():
-  full = load_dataset("imagefolder", data_dir=SPECTROGRAM_PATH, split="train")
-  train_testvalid = full.train_test_split(test_size=0.4)
-  test_valid = train_testvalid["test"].train_test_split(test_size=0.5)
+  # Load the full dataset, making sure to shuffle it (deterministically, by setting
+  # a seed) to ensure classes are equally represented when we perform the
+  # train/valid/test split.
+  full = load_dataset(
+    "imagefolder", data_dir=SPECTROGRAM_PATH, split="train"
+  ).shuffle(seed=413).flatten_indices()
+
+  # Separate out the test set. Don't shuffle again to ensure no training or
+  # validation data is ever part of the test set.
+  trainvalid_test = full.train_test_split(test_size=0.2, shuffle=False)
+
+  # Separate out the validation set. This time we do shuffle since the saved model
+  # won't be evaluated against this set of data again.
+  train_valid = trainvalid_test["train"].train_test_split(
+      test_size=0.25, shuffle=True)
+
   ds = DatasetDict({
-    "train": train_testvalid["train"],
-    "test": test_valid["test"],
-    "valid": test_valid["train"]})
+    "train": train_valid["train"],
+    "test": trainvalid_test["test"],
+    "valid": train_valid["test"]})
+
   return ds
 
 # A transformation which applies the above processor and some data
