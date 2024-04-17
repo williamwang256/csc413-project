@@ -8,4 +8,4 @@
 #SBATCH --output=413-project_%j.out
 
 source venv/bin/activate
-python3 src/transformer.py
+python3 src/transformer.py -t
