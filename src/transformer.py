@@ -55,7 +55,7 @@ def load_ds():
   # train/valid/test split.
   full = load_dataset(
     "imagefolder", data_dir=SPECTROGRAM_PATH, split="train"
-  ).shuffle(seed=413).flatten_indices()
+  ).shuffle(seed=26).flatten_indices()
 
   # Separate out the test set. Don't shuffle again to ensure no training or
   # validation data is ever part of the test set.
