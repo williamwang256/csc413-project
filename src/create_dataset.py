@@ -24,7 +24,7 @@ def download_dataset():
   print("Downloading dataset...")
   api = KaggleApi()
   api.authenticate()
-  api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE, unzip=True)
+  api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE + "/data/", unzip=True)
 
 
 def create_folders():
