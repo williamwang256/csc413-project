@@ -2,4 +2,4 @@
 __pycache__
 venv/
 data/
-vit-birds/
+saved_models/
