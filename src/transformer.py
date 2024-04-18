@@ -26,10 +26,6 @@ from config import *
 MODEL = "google/vit-base-patch16-224-in21k"
 processor = ViTImageProcessor.from_pretrained(MODEL)
 
-# Where to save the model
-MODEL_SAVE_DIR = BASE + "vit-birds"
-
-# Metadata
 df = pd.read_csv(METADATA_PATH, header=0)
 
 # Perform random time-shift augmentation on the given spectrogram 
@@ -247,7 +243,7 @@ if __name__ == "__main__":
 
     elif o in ("-t"):
       print("Training new model...")
-      save_dir = a if a else MODEL_SAVE_DIR
+      save_dir = a
       ds = load_ds()
       labels = ds["train"].features["label"].names
       model = ViTForImageClassification.from_pretrained(
@@ -264,7 +260,7 @@ if __name__ == "__main__":
       trainer.save_state()
 
     elif o in ("-e"):
-      save_dir = a if a else MODEL_SAVE_DIR
+      save_dir = a
       if not os.path.isdir(save_dir):
         print("No saved model found.")
         exit()
@@ -277,7 +273,7 @@ if __name__ == "__main__":
       trainer.save_metrics("eval", metrics)
 
     elif o in ("-a"):
-      save_dir = a if a else MODEL_SAVE_DIR
+      save_dir = a
       if not os.path.isdir(save_dir):
         print("No saved model found.")
         exit(0)
@@ -288,7 +284,7 @@ if __name__ == "__main__":
       plot_attention_map(img, attn_map)
 
     elif o in ("-p"):
-      save_dir = a if a else MODEL_SAVE_DIR
+      save_dir = a
       if not os.path.isdir(save_dir):
         print("No saved model found.")
         exit()
