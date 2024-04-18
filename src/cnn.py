@@ -1,8 +1,10 @@
+import os
+from random import randint, uniform
+import sys
+
 import matplotlib.pyplot as plt
 import numpy as np
-from random import randint, uniform
 import torch
-import sys
 import torch.nn as nn
 from torch.utils.data import random_split, Dataset
 from torchvision.datasets import ImageFolder
@@ -20,7 +22,7 @@ class BirdSpectrogramResNet50(nn.Module):
 
     # modify last layer
     num_ftrs = self.network.fc.in_features # fc is the fully connected last layer
-    self.network.fc = nn.Linear(num_ftrs, num_species) # MAKE SURE TO UPDATE THIS TO THE CORRECT NUMBER OF BIRDS
+    self.network.fc = nn.Linear(num_ftrs, num_species)
     nn.init.xavier_uniform_(self.network.fc.weight) # initialize weights
 
   def forward(self, xb):
@@ -122,7 +124,7 @@ def train_model(model,
     plt.title("Loss over iterations")
     plt.xlabel("Iterations")
     plt.ylabel("Loss")
-    plt.savefig("loss.png")
+    plt.savefig(os.path.join(PLOTS_DIR, "cnn_loss.png"))
 
     plt.figure()
     plt.plot(iters[:len(train_acc)], train_acc)
@@ -131,7 +133,11 @@ def train_model(model,
     plt.xlabel("Iterations")
     plt.ylabel("Accuracy")
     plt.legend(["Train", "Validation"])
-    plt.savefig("acc.png")
+    plt.savefig(os.path.join(PLOTS_DIR, "cnn_acc.png"))
+
+# Perform random time-shift augmentation on the given spectrogram 
+def time_shift_augment(original_melspec):
+  return torch.roll(original_melspec, randint(1, 10000), dims=2)
 
 # Performs time and frequency masking as a form of data augmentation on the spectrogram.
 # Referenced from: https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook
@@ -170,32 +176,27 @@ if __name__ == "__main__":
   torch.manual_seed(random_seed)
 
   # use ImageFolder to load the data to Pytorch Dataset Format
-  dataset = ImageFolder(SPECTROGRAM_PATH) # REPLACE WITH CORRECT PATH
-  print("Number of samples: ", len(dataset))
-  # print(dataset.classes)
-  print("Number of classes: ", len(dataset.classes))
-
-  # UPDATE THESE RATIOS ONCE WE HAVE THE FULL DATASET
+  # Use the split: 60% train, 20% validation, 20% test
+  dataset = ImageFolder(SPECTROGRAM_PATH)
   train_size = int(0.6 * len(dataset))
   val_size   = int(0.2 * len(dataset))
   test_size  = len(dataset) - train_size - val_size
-
   train_set, val_set, test_set = random_split(dataset, [train_size, val_size, test_size])
+  print("Number of samples: ", len(dataset))
+  print("Number of classes: ", len(dataset.classes))
   print("Train set size: ", len(train_set))
   print("Validation set size: ", len(val_set))
   print("Test set size: ", len(test_set))
 
-  # define transformations here
+  # define transformations
   transform = transforms.Compose([
-    # you can add other transformations in this list
     transforms.Resize((224, 224)),
     transforms.ToTensor()
   ])
   transform_aug = transforms.Compose([
-    # you can add other transformations in this list
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Lambda(lambda x: torch.roll(x, randint(1, 10000), dims=2))
+    transforms.Lambda(lambda x: time_shift_augment(x))
     # transforms.Lambda(lambda x: spec_augment(x))
   ])
 
@@ -211,8 +212,8 @@ if __name__ == "__main__":
   model = BirdSpectrogramResNet50(len(dataset.classes))
 
   # Train the model
-  train_model(model, device, train_ds, val_ds, learning_rate=0.001, epochs=10, plot_every=10, plot=False)
+  train_model(model, device, train_ds, val_ds, learning_rate=0.001, epochs=10, plot_every=10, plot=True)
 
-  # Final test accuracy
+  # Report final test accuracy
   test_dl  = torch.utils.data.DataLoader(test_ds, 256)
   print("test acc {}".format(accuracy(model, test_dl, device)))

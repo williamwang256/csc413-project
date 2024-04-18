@@ -4,19 +4,20 @@
 # https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map
 # https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c
 
-import cv2
 import getopt
 import json
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import pandas as pd
-from PIL import Image
 from random import randint, uniform
 import sys
-import torch
-from evaluate import load
+
+import cv2
 from datasets import load_dataset, DatasetDict
+from evaluate import load
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from PIL import Image
+import torch
 from transformers import Trainer, TrainingArguments, ViTForImageClassification, ViTImageProcessor
 
 from config import *
@@ -29,6 +30,10 @@ MODEL_SAVE_DIR = BASE + "vit-birds"
 
 # Metadata
 df = pd.read_csv(METADATA_PATH, header=0)
+
+# Perform random time-shift augmentation on the given spectrogram 
+def time_shift_augment(original_melspec):
+  return torch.roll(original_melspec, randint(1, 10000), dims=2)
 
 # Performs time and frequency masking as a form of data augmentation on the spectrogram.
 # Referenced from: https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook
@@ -60,7 +65,8 @@ def transform(example_batch):
 # Transform with time shift augmentation (for training set)
 def transform_augment(example_batch):
   inputs = processor([x for x in example_batch["image"]], return_tensors="pt")
-  inputs["pixel_values"] = torch.roll(inputs["pixel_values"], randint(1, 10000), dims=3)
+  inputs["pixel_values"] = time_shift_augment(inputs["pixel_values"])
+  # inputs["pixel_values"] = spec_augment(inputs["pixel_values"])
   inputs["label"] = example_batch["label"]
   return inputs
 
@@ -227,6 +233,10 @@ if __name__ == "__main__":
   except getopt.GetoptError as err:
     usage()
     exit(1)
+
+  if len(opts) == 0:
+    usage()
+    exit()
 
   for o, a in opts:
     if o in ("-h"):

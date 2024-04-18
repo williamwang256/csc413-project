@@ -8,4 +8,5 @@
 #SBATCH --output=413-project_%j.out
 
 source venv/bin/activate
-python3 src/classifier.py 0
+export CSC413_PROJECT_DIR="$PWD"
+time python3 src/cnn.py 0
