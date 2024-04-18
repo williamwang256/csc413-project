@@ -211,7 +211,7 @@ if __name__ == "__main__":
   model = BirdSpectrogramResNet50(len(dataset.classes))
 
   # Train the model
-  train_model(model, device, train_ds, val_ds, learning_rate=0.001, epochs=10, plot_every=10, plot=True)
+  train_model(model, device, train_ds, val_ds, learning_rate=0.001, epochs=6, plot_every=10, plot=True)
 
   # Report final test accuracy
   test_dl  = torch.utils.data.DataLoader(test_ds, 256)
