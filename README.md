@@ -1,6 +1,6 @@
 # Image Based Bird Song Classifcation
 
-In this study, we explore the challenge of classifying bird species based on audio bird signals using computer vision image classification models — ResNet50 and Vision Transformer (ViT). We convert the audio files into image spectrograms that can be used as input into ResNet50 and ViT. The dataset considered is the [British Birdsong Dataset](https://xeno-canto.org/), which features a robust collection of bird songs from 88 species of bird native to Britain.
+In this study, we explore the challenge of classifying bird species based on audio bird signals using computer vision image classification models — ResNet50 and Vision Transformer (ViT). We convert the audio files into image spectrograms that can be used as input into ResNet50 and ViT. The dataset considered is the [British Birdsong Dataset](https://www.kaggle.com/datasets/rtatman/british-birdsong-dataset), which features a robust collection of bird songs from 88 species of bird native to Britain.
 
 This repository contains all of our source code to setup, train and run the model.
 
