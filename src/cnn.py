@@ -144,7 +144,6 @@ def time_shift_augment(original_melspec):
 # NOTE: we chose not to apply this transformation to the final model, but we leave the code here for completeness.
 def spec_augment(original_melspec, freq_masking_max_percentage=0.15, time_masking_max_percentage=0.3):
   augmented_melspec = original_melspec.clone()
-  # print(augmented_melspec.shape)
   _, all_frames_num, all_freqs_num = augmented_melspec.shape
 
   # Frequency masking
