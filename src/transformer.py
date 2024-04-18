@@ -184,7 +184,7 @@ def plot_attention_map(original_img, att_map):
   _ = ax2.imshow(att_map)
   ax1.axis("off")
   ax2.axis("off")
-  plt.savefig(os.path.join(PLOTS_DIR, "attn_map.jpg"))
+  plt.savefig(os.path.join(PLOTS_DIR, "attn_map.png"))
 
 # Plots the training loss and validation accuracy curves
 def plot_curves(save_dir):
