@@ -2,6 +2,7 @@
 # https://huggingface.co/docs/datasets/en/create_dataset
 # https://huggingface.co/docs/datasets/en/quickstart#vision
 # https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map
+# https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c
 
 import cv2
 import json
@@ -21,6 +22,9 @@ from config import *
 
 # We will fine-tune the following pre-trained model
 MODEL = "google/vit-base-patch16-224-in21k"
+
+# Where to save the model
+MODEL_SAVE_DIR = BASE + "vit-birds"
 
 # Metadata
 df = pd.read_csv(METADATA_PATH, header=0)
@@ -47,6 +51,20 @@ def spec_augment(original_melspec, freq_masking_max_percentage=0.15, time_maskin
 
   return augmented_melspec
 
+# Tranform without augmentation (for validation and test sets)
+def transform(example_batch):
+  inputs = processor([x for x in example_batch["image"]], return_tensors="pt")
+  inputs["label"] = example_batch["label"]
+  return inputs
+
+# Transform with time shift augmentation (for training set)
+def transform_augment(example_batch):
+  inputs = processor([x for x in example_batch["image"]], return_tensors="pt")
+  inputs["pixel_values"] = torch.roll(inputs["pixel_values"], randint(1, 10000), dims=3)
+  inputs["pixel_values"] = spec_augment(inputs["pixel_values"])
+  inputs["label"] = example_batch["label"]
+  return inputs
+
 # Load the dataset, and split into train, test, and validation sets
 # Use the split: 60% train, 20% validation, 20% test
 def load_ds():
@@ -59,28 +77,16 @@ def load_ds():
 
   # Separate out the test set. Don't shuffle again to ensure no training or
   # validation data is ever part of the test set.
-  trainvalid_test = full.train_test_split(test_size=0.2, shuffle=False)
+  split1 = full.train_test_split(test_size=0.2, shuffle=False)
 
   # Separate out the validation set. This time we do shuffle since the saved model
   # won't be evaluated against this set of data again.
-  train_valid = trainvalid_test["train"].train_test_split(
-      test_size=0.25, shuffle=True)
+  split2 = split1["train"].train_test_split(test_size=0.25, shuffle=True)
 
-  ds = DatasetDict({
-    "train": train_valid["train"],
-    "test": trainvalid_test["test"],
-    "valid": train_valid["test"]})
-
-  return ds
-
-# A transformation which applies the above processor and some data
-# augmentation steps (time shifting)
-def transform(example_batch):
-  inputs = processor([x for x in example_batch["image"]], return_tensors="pt")
-  inputs["pixel_values"] = torch.roll(inputs["pixel_values"], randint(1, 10000), dims=3)
-  # inputs["pixel_values"] = spec_augment(inputs["pixel_values"])
-  inputs["label"] = example_batch["label"]
-  return inputs
+  return DatasetDict({
+    "train": split2["train"].with_transform(transform_augment),
+    "test":  split1["test"].with_transform(transform),
+    "valid": split2["test"].with_transform(transform)})
 
 # Stacks the inputs from a batch into a single tensor
 def collate_fn(batch):
@@ -107,6 +113,7 @@ def get_trainer(model, processor, ds):
     eval_steps=10,
     logging_steps=10,
     learning_rate=2e-4,
+    # logging_strategy="no",
     save_total_limit=2,
     remove_unused_columns=False,
     push_to_hub=False,
@@ -199,6 +206,7 @@ def plot_curves():
     plt.title("Validation Accuracy over Iterations")
     plt.xlabel("Epoch")
     plt.ylabel("Validation Accuracy")
+    plt.ylim(0, 1)
     plt.savefig(os.path.join(PLOTS_DIR, "transformers_acc.png"))
     plt.figure()
     plt.plot(train_checkpoints, loss)
@@ -222,9 +230,7 @@ if __name__ == "__main__":
     exit(1)
 
   processor = ViTImageProcessor.from_pretrained(MODEL)
-  
   ds = load_ds()
-  prepared_ds = ds.with_transform(transform)
 
   if ("-t") in sys.argv:
     print("Training new model...")
@@ -235,7 +241,7 @@ if __name__ == "__main__":
       id2label={str(i): c for i, c in enumerate(labels)},
       label2id={c: str(i) for i, c in enumerate(labels)}
     )
-    trainer = get_trainer(model, processor, prepared_ds)
+    trainer = get_trainer(model, processor, ds)
     train_results = trainer.train()
     trainer.save_model()
     trainer.log_metrics("train", train_results.metrics)
@@ -248,8 +254,8 @@ if __name__ == "__main__":
       exit(1)
     print("Evaluating on saved model: ", MODEL_SAVE_DIR)
     model = ViTForImageClassification.from_pretrained(MODEL_SAVE_DIR)
-    trainer = get_trainer(model, processor, prepared_ds)
-    metrics = trainer.evaluate(prepared_ds["test"])
+    trainer = get_trainer(model, processor, ds)
+    metrics = trainer.evaluate(ds["test"])
     trainer.log_metrics("eval", metrics)
     trainer.save_metrics("eval", metrics)
 
