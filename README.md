@@ -49,13 +49,21 @@ python3 src/create_dataset.py
 ## References
 
 [Fine-Tune ViT for Image Classification with 🤗 Transformers](https://huggingface.co/blog/fine-tune-vit)
+
 [Hugging Face - Create a dataset](https://huggingface.co/docs/datasets/en/create_dataset)
+
 [Quickstart - Vision](https://huggingface.co/docs/datasets/en/quickstart#vision)
+
 [Vision Transformer (ViT) : Visualize Attention Map](https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map)
+
 [Data Augmentation Techniques for Audio Data in Python](https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c)
+
 [Audio data augmentation](https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook)
+
 [How do I split an audio file into multiple?](https://unix.stackexchange.com/a/283547)
+
 [Guide to Audio Classification Using Deep Learning](https://www.analyticsvidhya.com/blog/2022/04/guide-to-audio-classification-using-deep-learning/)
+
 
 
 
