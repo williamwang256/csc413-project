@@ -5,6 +5,7 @@
 # https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c
 
 import cv2
+import getopt
 import json
 import matplotlib.pyplot as plt
 import numpy as np
@@ -61,7 +62,6 @@ def transform(example_batch):
 def transform_augment(example_batch):
   inputs = processor([x for x in example_batch["image"]], return_tensors="pt")
   inputs["pixel_values"] = torch.roll(inputs["pixel_values"], randint(1, 10000), dims=3)
-  inputs["pixel_values"] = spec_augment(inputs["pixel_values"])
   inputs["label"] = example_batch["label"]
   return inputs
 
@@ -102,9 +102,9 @@ def compute_metrics(p):
                         references=p.label_ids)
 
 # Gets the trainer object
-def get_trainer(model, processor, ds):
+def get_trainer(model, processor, ds, save_dir):
   training_args = TrainingArguments(
-    output_dir=MODEL_SAVE_DIR,
+    output_dir=save_dir,
     per_device_train_batch_size=16,
     evaluation_strategy="steps",
     num_train_epochs=10,
@@ -186,9 +186,9 @@ def plot_attention_map(original_img, att_map):
   ax2.axis("off")
   plt.savefig(os.path.join(PLOTS_DIR, "attn_map.jpg"))
 
-
-def plot_curves():
-  with open(os.path.join(MODEL_SAVE_DIR, "trainer_state.json"), "r") as f:
+# Plots the training loss and validation accuracy curves
+def plot_curves(save_dir):
+  with open(os.path.join(save_dir, "trainer_state.json"), "r") as f:
     d = json.load(f)
     eval_checkpoints = []
     train_checkpoints = []
@@ -215,63 +215,77 @@ def plot_curves():
     plt.ylabel("Training Loss")
     plt.savefig("plots/transformers_loss.png")
 
+def usage():
+  print("Usage: python3 transformer.py [-t] [-a] [-e] [-p] [-h]")
+  print("[-t <model_path>] Trains the model and saves to <model_path>\n"
+        "[-a <model_path>] Outputs sample attention map for the saved model\n"
+        "[-e <model_path>] Evaluates the saved model on the test set\n"
+        "[-p <model_path>] Plots loss and accuracy curves for the saved model")
 
 if __name__ == "__main__":
-  
-  if len(sys.argv) < 2 or len(sys.argv) > 5:
-    print("Usage: python3 transformer.py [-t] [-a] [-e] [-p] [-h]")
-    exit(1)
-  
-  if ("-h" in sys.argv):
-    print("[-t] Trains the model\n"
-          "[-a] Outputs sample attention map\n"
-          "[-e] Evaluates on the test set\n"
-          "[-p] Plots loss and accuracy curves")
+  try:
+    opts, args = getopt.getopt(sys.argv[1:], "a:e:t:p:hl")
+  except getopt.GetoptError as err:
+    usage()
     exit(1)
 
-  processor = ViTImageProcessor.from_pretrained(MODEL)
-  ds = load_ds()
+  for o, a in opts:
+    if o in ("-h"):
+      usage()
+      exit()
 
-  if ("-t") in sys.argv:
-    print("Training new model...")
-    labels = ds["train"].features["label"].names
-    model = ViTForImageClassification.from_pretrained(
-      MODEL,
-      num_labels=len(labels),
-      id2label={str(i): c for i, c in enumerate(labels)},
-      label2id={c: str(i) for i, c in enumerate(labels)}
-    )
-    trainer = get_trainer(model, processor, ds)
-    train_results = trainer.train()
-    trainer.save_model()
-    trainer.log_metrics("train", train_results.metrics)
-    trainer.save_metrics("train", train_results.metrics)
-    trainer.save_state()
+    elif o in ("-t"):
+      print("Training new model...")
+      save_dir = a if a else MODEL_SAVE_DIR
+      ds = load_ds()
+      processor = ViTImageProcessor.from_pretrained(MODEL)
+      labels = ds["train"].features["label"].names
+      model = ViTForImageClassification.from_pretrained(
+        MODEL,
+        num_labels=len(labels),
+        id2label={str(i): c for i, c in enumerate(labels)},
+        label2id={c: str(i) for i, c in enumerate(labels)}
+      )
+      trainer = get_trainer(model, processor, ds, save_dir)
+      train_results = trainer.train()
+      trainer.save_model()
+      trainer.log_metrics("train", train_results.metrics)
+      trainer.save_metrics("train", train_results.metrics)
+      trainer.save_state()
 
-  if ("-e") in sys.argv:
-    if not os.path.isdir(MODEL_SAVE_DIR):
-      print("No saved model found.")
-      exit(1)
-    print("Evaluating on saved model: ", MODEL_SAVE_DIR)
-    model = ViTForImageClassification.from_pretrained(MODEL_SAVE_DIR)
-    trainer = get_trainer(model, processor, ds)
-    metrics = trainer.evaluate(ds["test"])
-    trainer.log_metrics("eval", metrics)
-    trainer.save_metrics("eval", metrics)
+    elif o in ("-e"):
+      save_dir = a if a else MODEL_SAVE_DIR
+      if not os.path.isdir(save_dir):
+        print("No saved model found.")
+        exit()
+      print("Evaluating on saved model: ", save_dir)
+      ds = load_ds()
+      processor = ViTImageProcessor.from_pretrained(MODEL)
+      model = ViTForImageClassification.from_pretrained(save_dir)
+      trainer = get_trainer(model, processor, ds, save_dir)
+      metrics = trainer.evaluate(ds["test"])
+      trainer.log_metrics("eval", metrics)
+      trainer.save_metrics("eval", metrics)
 
-  if ("-a" in sys.argv):
-    if not os.path.isdir(MODEL_SAVE_DIR):
-      print("No saved model found.")
-      exit(1)
-    print("Generating attention map on saved model: ", MODEL_SAVE_DIR)
-    model = ViTForImageClassification.from_pretrained(MODEL_SAVE_DIR)
-    img = Image.open(SPECTROGRAM_PATH + "/Eurasian Wren/xc71024_021.jpg")
-    attn_map = get_attention_map(model, processor, img, True)
-    plot_attention_map(img, attn_map)
+    elif o in ("-a"):
+      save_dir = a if a else MODEL_SAVE_DIR
+      if not os.path.isdir(save_dir):
+        print("No saved model found.")
+        exit(0)
+      print("Generating attention map on saved model: ", save_dir)
+      processor = ViTImageProcessor.from_pretrained(MODEL)
+      model = ViTForImageClassification.from_pretrained(save_dir)
+      img = Image.open(SPECTROGRAM_PATH + "/Eurasian Wren/xc71024_021.jpg")
+      attn_map = get_attention_map(model, processor, img, True)
+      plot_attention_map(img, attn_map)
 
-  if ("-p" in sys.argv):
-    if not os.path.isdir(MODEL_SAVE_DIR):
-      print("No saved model found.")
-      exit(1)
-    print("Plotting accuacy and loss curves for saved model: ", MODEL_SAVE_DIR)
-    plot_curves()
+    elif o in ("-p"):
+      save_dir = a if a else MODEL_SAVE_DIR
+      if not os.path.isdir(save_dir):
+        print("No saved model found.")
+        exit()
+      print("Plotting accuacy and loss curves for saved model: ", save_dir)
+      plot_curves(save_dir)
+
+    else:
+      assert False, "Unknown option!"
