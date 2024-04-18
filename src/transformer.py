@@ -24,6 +24,7 @@ from config import *
 
 # We will fine-tune the following pre-trained model
 MODEL = "google/vit-base-patch16-224-in21k"
+processor = ViTImageProcessor.from_pretrained(MODEL)
 
 # Where to save the model
 MODEL_SAVE_DIR = BASE + "vit-birds"
@@ -189,6 +190,7 @@ def plot_attention_map(original_img, att_map):
   _ = ax2.imshow(att_map)
   ax1.axis("off")
   ax2.axis("off")
+  plt.tight_layout()
   plt.savefig(os.path.join(PLOTS_DIR, "attn_map.png"))
 
 # Plots the training loss and validation accuracy curves
@@ -247,7 +249,6 @@ if __name__ == "__main__":
       print("Training new model...")
       save_dir = a if a else MODEL_SAVE_DIR
       ds = load_ds()
-      processor = ViTImageProcessor.from_pretrained(MODEL)
       labels = ds["train"].features["label"].names
       model = ViTForImageClassification.from_pretrained(
         MODEL,
@@ -269,7 +270,6 @@ if __name__ == "__main__":
         exit()
       print("Evaluating on saved model: ", save_dir)
       ds = load_ds()
-      processor = ViTImageProcessor.from_pretrained(MODEL)
       model = ViTForImageClassification.from_pretrained(save_dir)
       trainer = get_trainer(model, processor, ds, save_dir)
       metrics = trainer.evaluate(ds["test"])
@@ -282,7 +282,6 @@ if __name__ == "__main__":
         print("No saved model found.")
         exit(0)
       print("Generating attention map on saved model: ", save_dir)
-      processor = ViTImageProcessor.from_pretrained(MODEL)
       model = ViTForImageClassification.from_pretrained(save_dir)
       img = Image.open(SPECTROGRAM_PATH + "/Eurasian Wren/xc71024_021.jpg")
       attn_map = get_attention_map(model, processor, img, True)
