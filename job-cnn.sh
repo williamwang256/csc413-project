@@ -9,4 +9,4 @@
 
 source venv/bin/activate
 export CSC413_PROJECT_DIR="$PWD"
-time python3 src/cnn.py 0
+python3 src/cnn.py 0

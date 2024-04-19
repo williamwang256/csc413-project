@@ -9,5 +9,4 @@
 
 source venv/bin/activate
 export CSC413_PROJECT_DIR="$PWD"
-
-time python3 src/transformer.py -t -a -e -p
+python3 src/transformer.py -t -a -e -p
