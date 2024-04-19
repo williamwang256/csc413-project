@@ -52,6 +52,8 @@ python3 src/create_dataset.py
 
 [Hugging Face - Create a dataset](https://huggingface.co/docs/datasets/en/create_dataset)
 
+[Hugging Face - Process](https://huggingface.co/docs/datasets/en/process)
+
 [Quickstart - Vision](https://huggingface.co/docs/datasets/en/quickstart#vision)
 
 [Vision Transformer (ViT) : Visualize Attention Map](https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map)
