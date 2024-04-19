@@ -9,6 +9,5 @@
 
 source venv/bin/activate
 export CSC413_PROJECT_DIR="$PWD"
-MODEL="model"
 
-time python3 src/transformer.py -t $MODEL -a $MODEL -e $MODEL -p $MODEL
+time python3 src/transformer.py -t -a -e -p
