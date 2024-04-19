@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ```bash
 export CSC413_PROJECT_DIR="$PWD"  # store datasets and models in the current working directory
 ```
-> **NOTE:** We have provided a ready-to-use dataset with all of our preprocessing steps applied here. If you wish to use that, simply download the file and extract it into the project directory. You can then skip steps 5 and 6.
+> **NOTE:** We have provided a ready-to-use dataset with all of our preprocessing steps applied [here](https://drive.google.com/file/d/1Ekf4ZFG2Y-iPDbEymr3UNZuNHOblTwav/view?usp=drive_link). If you wish to use that, simply download the file and extract it into the project directory. You can then skip steps 5 and 6.
 
 5. [Optional] Follow the instructions [here](https://www.kaggle.com/docs/api) to set up your environment to use Kaggle's API. You essentially just need to create a file called `~/.kaggle/kaggle.json` with the following format:
 ```
@@ -53,6 +53,8 @@ python3 src/create_dataset.py
 [Fine-Tune ViT for Image Classification with 🤗 Transformers](https://huggingface.co/blog/fine-tune-vit)
 
 [Hugging Face - Create a dataset](https://huggingface.co/docs/datasets/en/create_dataset)
+
+[Hugging Face - Process](https://huggingface.co/docs/datasets/en/process)
 
 [Quickstart - Vision](https://huggingface.co/docs/datasets/en/quickstart#vision)
 
