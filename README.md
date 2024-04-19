@@ -18,7 +18,7 @@ cd csc413-project
 2. Create a new Python virtual environment, and activate it.
 ```bash
 python3 -m venv venv
-source venv
+source venv/bin/activate
 ```
 3. Install all required dependencies.
 ```bash
