@@ -113,8 +113,8 @@ def get_trainer(model, processor, ds):
     evaluation_strategy="steps",
     num_train_epochs=10,
     fp16=torch.cuda.is_available(),  # fp16 only supported on GPU
-    save_steps=500,
-    eval_steps=500,
+    save_steps=10,
+    eval_steps=10,
     logging_steps=10,
     learning_rate=2e-4,
     save_total_limit=2,
