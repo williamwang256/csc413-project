@@ -1,6 +1,7 @@
-# https://unix.stackexchange.com/a/283547
-# https://www.analyticsvidhya.com/blog/2022/04/guide-to-audio-classification-using-deep-learning/
-# https://stackoverflow.com/a/60309843
+# References:
+# [1] https://unix.stackexchange.com/a/283547
+# [2] https://www.analyticsvidhya.com/blog/2022/04/guide-to-audio-classification-using-deep-learning/
+# [3] https://stackoverflow.com/a/60309843
 
 import os
 import re
@@ -24,7 +25,8 @@ def download_dataset():
   print("Downloading dataset...")
   api = KaggleApi()
   api.authenticate()
-  api.dataset_download_files("rtatman/british-birdsong-dataset", path=BASE + "/data/", unzip=True)
+  api.dataset_download_files(
+    "rtatman/british-birdsong-dataset", path=BASE + "/data/", unzip=True)
 
 
 def create_folders():
@@ -40,8 +42,11 @@ def segment_clips():
     m = re.search(pattern, file)
     if m is not None:
       filename, fid = m.group(0), m.group(1)
-      command = f"ffmpeg -i {os.path.join(SONGS_PATH, filename)} -f segment -segment_time {SEGMENT_TIME} {os.path.join(AUDIO_PATH, fid + '_%03d.wav')}"
-      process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+      command = (f"ffmpeg -i {os.path.join(SONGS_PATH, filename)} -f segment "
+                 f"-segment_time {SEGMENT_TIME} "
+                 f"{os.path.join(AUDIO_PATH, fid + '_%03d.wav')}")
+      process = subprocess.Popen(
+        command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
       process.wait()
 
 
@@ -61,7 +66,8 @@ def plot_spectrogram(S, sr, fid, segment):
   plt.axis("off")
   plt.close()
   command = f"convert \"{filename}\" -crop 610x450+15+15 \"{filename}\""
-  process = subprocess.Popen(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
+  process = subprocess.Popen(
+    command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.STDOUT)
   process.wait()
 
 
@@ -71,7 +77,8 @@ def generate_spectrograms():
     y, sr = librosa.load(f"{AUDIO_PATH}/{file}", sr=SAMPLE_RATE, mono=True)
     pad_amount = NUM_SAMPLES - y.shape[0]
     y = np.pad(y, (0, pad_amount), "constant", constant_values=(0, 0))
-    S = librosa.feature.melspectrogram(y=y, sr=sr, n_mels=128, fmin=500, fmax=15000, n_fft=2048)
+    S = librosa.feature.melspectrogram(
+      y=y, sr=sr, n_mels=128, fmin=500, fmax=15000, n_fft=2048)
     S_dB = librosa.power_to_db(S, ref=np.max)
     fid, segment = file.strip(".wav").split("_")
     plot_spectrogram(S=S_dB, sr=sr, fid=fid, segment=segment)
