@@ -7,19 +7,19 @@
 # [6] https://www.kaggle.com/code/piantic/vision-transformer-vit-visualize-attention-map
 # [7] https://huggingface.co/docs/datasets/en/process
 
-import cv2
 import json
-import matplotlib.pyplot as plt
-import numpy as np
 import os
-import pandas as pd
-from PIL import Image
 from random import randint, uniform
 import sys
-import torch
 
-from evaluate import load
+import cv2
 from datasets import load_dataset, DatasetDict
+from evaluate import load
+import matplotlib.pyplot as plt
+import numpy as np
+import pandas as pd
+from PIL import Image
+import torch
 from transformers import Trainer, TrainingArguments, ViTForImageClassification, ViTImageProcessor
 
 from config import *
@@ -28,7 +28,7 @@ from config import *
 MODEL = "google/vit-base-patch16-224-in21k"
 
 # Where to save the model
-MODEL_SAVE_DIR="Old2"
+MODEL_SAVE_DIR = os.path.join(BASE, "vit-birds")
 
 # Metadata
 df = pd.read_csv(METADATA_PATH, header=0)
