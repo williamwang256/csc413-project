@@ -14,6 +14,7 @@ The steps below are targeted for a Linux system. After following these instructi
 git clone https://github.com/williamwang256/csc413-project
 cd csc413-project
 ```
+> **NOTE:** to ensure consistency, we recommend that you run all the steps below inside the project root directory, i.e., `<path-to>/csc413-project`.
 2. Create a new Python virtual environment, and activate it.
 ```bash
 python3 -m venv venv
@@ -23,30 +24,26 @@ source venv
 ```bash
 pip install -r requirements.txt
 ```
-4. Set the following environment variable. This tells our scripts where all the data and models should live. Note that the is set for you if you choose to run one of the demo scripts we have included.
-```bash
-export CSC413_PROJECT_DIR="$PWD"  # store datasets and models in the current working directory
-```
-> **NOTE:** We have provided a ready-to-use dataset with all of our preprocessing steps applied [here](https://drive.google.com/file/d/1Ekf4ZFG2Y-iPDbEymr3UNZuNHOblTwav/view?usp=drive_link). If you wish to use that, simply download the file and extract it into the project directory. You can then skip steps 5 and 6.
+> **NOTE:** We have provided a ready-to-use dataset with all of our preprocessing steps applied [here](https://drive.google.com/file/d/1Ekf4ZFG2Y-iPDbEymr3UNZuNHOblTwav/view?usp=drive_link). If you wish to use that, simply download the file and extract it into the project directory. You can then skip steps 4 and 5.
 
-5. [Optional] Follow the instructions [here](https://www.kaggle.com/docs/api) to set up your environment to use Kaggle's API. You essentially just need to create a file called `~/.kaggle/kaggle.json` with the following format:
+4. [Optional] Follow the instructions [here](https://www.kaggle.com/docs/api) to set up your environment to use Kaggle's API. You essentially just need to create a file called `~/.kaggle/kaggle.json` with the following format:
 ```
 {"username":"your-username","key":"your-api-key"}
 ```
-6. [Optional] Download the dataset, and apply all proprocessing steps (segmenting, resampling, converting to spectrograms, cropping, etc.). **This may take a while.**
+5. [Optional] Download the dataset, and apply all preprocessing steps (segmenting, resampling, converting to spectrograms, cropping, etc.). **This may take a while.**
 ```
 python3 src/create_dataset.py
 ```
-7. Run the ResNet50 based classifier. A script is provided to facilitate running on the GPU cluster provided by the teaching labs. This will train the model, evaluate it on a test set, and plot loss and validation curves. Simply run:
+6. Run the ResNet50 based classifier. A script is provided to facilitate running on the GPU cluster provided by the teaching labs. This will train the model, evaluate it on a test set, and plot loss and validation curves. Simply run:
 ```
 ./run-cnn.sh
 ```
-8. Similarly, we provide another script to run the ViT based classifer. In addition to the actions described above, this will also plot a sample attention map as shown in our paper.
+7. Similarly, we provide another script to run the ViT based classifier. In addition to the actions described above, this will also plot a sample attention map as shown in our paper.
 ```
 ./run-transformer.sh
 ```
 
-> **NOTE:** We also provide a copy of our fine-tuned model weights here, for ViT. You can download this file, extract it in your working directory, and run `python3 transformers.py -a -e -p` to skip training and just evaluate and plot the attention map and loss/accuracy curves. 
+> **NOTE:** We also provide a copy of our fine-tuned model weights here, for ViT. You can download this file, extract it in your working directory, and run `python3 src/transformers.py -a -e -p` to skip training and just evaluate and plot the attention map and loss/accuracy curves. 
 
 ## References
 

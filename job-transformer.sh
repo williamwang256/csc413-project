@@ -8,5 +8,4 @@
 #SBATCH --output=413-project_%j.out
 
 source venv/bin/activate
-export CSC413_PROJECT_DIR="$PWD"
 python3 src/transformer.py -t -a -e -p
