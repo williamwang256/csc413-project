@@ -27,7 +27,7 @@ pip install -r requirements.txt
 ```bash
 export CSC413_PROJECT_DIR="$PWD"  # store datasets and models in the current working directory
 ```
-> **NOTE:** We have provided a ready-to-use dataset with all of our preprocessing steps applied here. If you wish to simply use that, simply download the file, and extract it into the project directory. You can then skip steps 5 and 6.
+> **NOTE:** We have provided a ready-to-use dataset with all of our preprocessing steps applied here. If you wish to use that, simply download the file and extract it into the project directory. You can then skip steps 5 and 6.
 
 5. [Optional] Follow the instructions [here](https://www.kaggle.com/docs/api) to set up your environment to use Kaggle's API. You essentially just need to create a file called `~/.kaggle/kaggle.json` with the following format:
 ```
@@ -45,6 +45,8 @@ python3 src/create_dataset.py
 ```
 ./run-transformer.sh
 ```
+
+> We also provide a copy of our fine-tuned model weights here, for ViT. You can download this file, extract it in your working directory, and run `python3 transformers.py -a -e -p` to skip training and just evaluate and plot the attention map and loss/accuracy curves. 
 
 ## References
 
