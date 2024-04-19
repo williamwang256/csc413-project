@@ -1,3 +1,8 @@
+# References:
+# CSC413 and CSC420 labs
+# [1] https://towardsdatascience.com/data-augmentation-techniques-for-audio-data-in-python-15505483c63c
+# [2] https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook
+
 import os
 from random import randint, uniform
 import sys
@@ -135,27 +140,24 @@ def train_model(model,
     plt.legend(["Train", "Validation"])
     plt.savefig(os.path.join(PLOTS_DIR, "cnn_acc.png"))
 
-# Perform random time-shift augmentation on the given spectrogram 
-def time_shift_augment(original_melspec):
-  return torch.roll(original_melspec, randint(1, 10000), dims=2)
-
-# Performs time and frequency masking as a form of data augmentation on the spectrogram.
-# Referenced from: https://www.kaggle.com/code/CVxTz/audio-data-augmentation/notebook
-# NOTE: we chose not to apply this transformation to the final model, but we leave the code here for completeness.
-def spec_augment(original_melspec, freq_masking_max_percentage=0.15, time_masking_max_percentage=0.3):
+# Performs time and frequency masking as a form of data augmentation on the
+# spectrogram. Reference: [1] and [2] NOTE: we chose not to apply this
+# transformation to the final model, but we leave the code here for completeness.
+def spec_augment(original_melspec, freq_masking_max_percentage=0.15,
+                 time_masking_max_percentage=0.3):
   augmented_melspec = original_melspec.clone()
-  _, all_frames_num, all_freqs_num = augmented_melspec.shape
+  _, _, all_frames_num, all_freqs_num = augmented_melspec.shape
 
   # Frequency masking
   freq_percentage = uniform(0.0, freq_masking_max_percentage)
   num_freqs_to_mask = int(freq_percentage * all_freqs_num)
-  f0 = int(np.random.uniform(low = 0.0, high = (all_freqs_num - num_freqs_to_mask)))
+  f0 = int(np.random.uniform(low=0.0, high=(all_freqs_num - num_freqs_to_mask)))
   augmented_melspec[:, :, f0:(f0 + num_freqs_to_mask)] = 0
 
   # Time masking
   time_percentage = uniform(0.0, time_masking_max_percentage)
   num_frames_to_mask = int(time_percentage * all_frames_num)
-  t0 = int(np.random.uniform(low = 0.0, high = (all_frames_num - num_frames_to_mask)))
+  t0 = int(np.random.uniform(low=0.0, high=(all_frames_num - num_frames_to_mask)))
   augmented_melspec[:, t0:(t0 + num_frames_to_mask), :] = 0
 
   return augmented_melspec
@@ -195,7 +197,7 @@ if __name__ == "__main__":
   transform_aug = transforms.Compose([
     transforms.Resize((224, 224)),
     transforms.ToTensor(),
-    transforms.Lambda(lambda x: time_shift_augment(x))
+    transforms.Lambda(lambda x: torch.roll(x, randint(1, 10000), dims=2)) # time shift augment, Reference: [1] and [2]
     # transforms.Lambda(lambda x: spec_augment(x))
   ])
 

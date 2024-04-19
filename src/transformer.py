@@ -34,7 +34,7 @@ MODEL_SAVE_DIR = os.path.join(BASE, "vit-birds")
 df = pd.read_csv(METADATA_PATH, header=0)
 
 # Performs time and frequency masking as a form of data augmentation on the
-# spectrogram. Reference: [5] and [6] NOTE: we chose not to apply this
+# spectrogram. Reference: [4] and [5] NOTE: we chose not to apply this
 # transformation to the final model, but we leave the code here for completeness.
 def spec_augment(original_melspec, freq_masking_max_percentage=0.15,
                  time_masking_max_percentage=0.3):
@@ -61,7 +61,8 @@ def transform(example_batch):
   inputs["label"] = example_batch["label"]
   return inputs
 
-# Transform with time shift augmentation (for training set). Reference: [1]
+# Transform with time shift augmentation (for training set). Reference: [1], [4]
+# and [5]
 def transform_augment(example_batch):
   inputs = processor([x for x in example_batch["image"]], return_tensors="pt")
   inputs["pixel_values"] = \
@@ -69,8 +70,8 @@ def transform_augment(example_batch):
   inputs["label"] = example_batch["label"]
   return inputs
 
-# Load the dataset and split into train/test/validation sets. Reference: [7]
-# Use the split: 60% train, 20% validation, 20% test
+# Load the dataset and split into train/test/validation sets. Use the split:
+# 60% train, 20% validation, 20% test. Reference: [2], [3] and [7]
 def load_ds():
   # Load the full dataset, making sure to shuffle it (deterministically, by setting
   # a seed) to ensure classes are equally represented when we perform the
