@@ -46,7 +46,7 @@ python3 src/create_dataset.py
 ./run-transformer.sh
 ```
 
-> We also provide a copy of our fine-tuned model weights here, for ViT. You can download this file, extract it in your working directory, and run `python3 transformers.py -a -e -p` to skip training and just evaluate and plot the attention map and loss/accuracy curves. 
+> **NOTE:** We also provide a copy of our fine-tuned model weights here, for ViT. You can download this file, extract it in your working directory, and run `python3 transformers.py -a -e -p` to skip training and just evaluate and plot the attention map and loss/accuracy curves. 
 
 ## References
 
